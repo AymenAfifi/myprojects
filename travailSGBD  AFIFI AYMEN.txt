@@ -1,0 +1,104 @@
+--EX1--
+/*
+DBMS_OUTPUT.PUT_LINE('Job:'||' '||g_job);
+DBMS_OUTPUT.PUT_LINE('Sal:'||' '||g_sal);
+*/
+/*
+SET SERVEROUTPUT ON
+ACCEPT cdemp PROMPT 'saisir le code de lemploye: '
+
+VARIABLE g_sal  NUMBER;
+VARIABLE g_job  VARCHAR2;
+BEGIN
+s_code :=&cdemp;
+SELECT job,sal INTO :g_job ,:g_sal FROM emp WHERE empno=s_code;
+
+EXCEPTION
+WHEN NO_DATA_FOUND THEN 
+DBMS_OUTPUT.PUT_LINE('code employe inexistant');
+END;
+/
+PRINT(g_job);
+PRINT(g_sal);
+*/
+--EX2--
+/*
+SET SERVEROUTPUT ON
+DECLARE
+CURSOR c_emp IS SELECT ename,hiredate FROM emp ORDER BY hiredate ;
+rec_emp c_emp%ROWTYPE;
+i NUMBER :=1;
+BEGIN
+OPEN c_emp;
+FETCH c_emp INTO rec_emp;
+WHILE (i<=5) AND (c_emp%FOUND) LOOP
+DBMS_OUTPUT.PUT_LINE(rec_emp.ename);
+i:=i+1;
+FETCH c_emp INTO rec_emp;
+END LOOP;
+END;
+/
+*/
+/*
+--EX3--
+--A--
+--Création procédure--
+
+CREATE OR REPLACE PROCEDURE proc_rech (p_dpt IN NUMBER ,p_nbr OUT NUMBER)
+IS
+BEGIN
+SELECT count(*) INTO p_nbr FROM emp WHERE deptno = p_dpt AND sal<1000;		
+END proc_rech;
+/
+
+
+--Execution procédure--
+
+SET SERVEROUTPUT ON
+DECLARE
+  p_dpt NUMBER;
+  p_nbr NUMBER;
+BEGIN
+  p_dpt:=20;
+  proc_rech(p_dpt,p_nbr);
+  DBMS_OUTPUT.PUT_LINE('Le nombredemploye est de : '||p_nbr);
+END;
+/
+
+--B--
+--creation fonction--
+
+CREATE OR REPLACE FUNCTION func_rech(p_dpt IN NUMBER)
+  RETURN BOOLEAN IS
+p_nbr NUMBER;
+BEGIN
+proc_rech(p_dpt,p_nbr);
+IF p_nbr=0 THEN RETURN FALSE ;
+ELSE RETURN TRUE;
+END IF;
+END func_rech;
+/
+
+--execution fonction--
+select func_rech(20)
+from dual;
+*/
+
+SET SERVEROUTPUT ON
+DECLARE
+CURSOR c_dept IS SELECT deptno  FROM dept ;
+rec_dept c_dept%ROWTYPE;
+i NUMBER :=1;
+BEGIN
+OPEN c_dept;
+FETCH c_dept INTO rec_dept;
+WHILE (c_dept%FOUND) LOOP
+IF func_rech(rec_dept.deptno)=TRUE THAN 
+DBMS_OUTPUT.PUT_LINE('Departement'||rec_dept.deptno||'incluant des salaires inf. à 1000');
+ELSE DBMS_OUTPUT.PUT_LINE('Departement'||rec_dept.deptno||'sans salaires inf. à 1000');
+END IF;
+i:=i+1;
+FETCH c_dept INTO rec_dept;
+END LOOP;
+END;
+/
